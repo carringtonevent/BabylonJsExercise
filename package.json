@@ -1,0 +1,21 @@
+{
+  "name": "babylon-js-exercise",
+  "version": "1.0.0",
+  "description": "Our Personal Babylon Js project",
+  "main": "webpack.config.js",
+  "author": "Julian, Armin",
+  "license": "unlicence",
+  "scripts": {
+    "start": "webpack"
+  },
+  "devDependencies": {
+    "ts-loader": "^9.2.6",
+    "typescript": "^4.5.4",
+    "webpack": "^5.65.0",
+    "webpack-cli": "^4.9.1"
+  },
+  "dependencies": {
+    "@tweenjs/tween.js": "^18.6.4",
+    "babylonjs": "^5.16.0"
+  }
+}
