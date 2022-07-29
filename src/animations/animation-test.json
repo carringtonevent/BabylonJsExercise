@@ -1,0 +1,69 @@
+{
+  "animations": [
+    {
+      "name": "animation-test",
+      "property": "position",
+      "framePerSecond": 60,
+      "dataType": 1,
+      "loopBehavior": 1,
+      "blendingSpeed": 0.01,
+      "keys": [
+        {
+          "frame": 0,
+          "values": [
+            0,
+            1,
+            0,
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ]
+          ]
+        },
+        {
+          "frame": 40.002413727526736,
+          "values": [
+            0,
+            2.649000883102417,
+            0,
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ]
+          ]
+        },
+        {
+          "frame": 100,
+          "values": [
+            0,
+            1,
+            0,
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ]
+          ]
+        }
+      ],
+      "ranges": []
+    }
+  ]
+}

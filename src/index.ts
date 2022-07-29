@@ -1,21 +1,25 @@
-import * as BABYLON from 'babylonjs';
-import { Timeline } from './managers/Timeline'
+import * as BABYLON from 'babylonjs'
+// import { Timeline } from './managers/Timeline'
+// import animationJSON from './animations/animation-test.json'
+import particleSystemJSON from './particle_systems/particleSystem.json'
+
+const DEBUG_MODE = false
 
 let canvas = document.createElement('canvas')
-document.body.appendChild(canvas);
+document.body.appendChild(canvas)
 
-canvas.style.width = '100vw';
-canvas.style.height = '100vh';
+canvas.style.width = '100vw'
+canvas.style.height = '100vh'
 
 let style = document.createElement('style')
 style.innerHTML = `
 .hide-cursor {
-  cursor: none;
+  cursor: none
 }
 `
 document.head.appendChild(style)
 
-let engine = new BABYLON.Engine(canvas, true, {preserveDrawingBuffer: true, stencil: true}, true);
+let engine = new BABYLON.Engine(canvas, true, {preserveDrawingBuffer: true, stencil: true}, true)
 let inputVector = new BABYLON.Vector3(0, 0, 0)
 let inputObject = {
   left: false,
@@ -28,47 +32,71 @@ let inputObject = {
 
 let createScene = () => {
   // Create a basic BJS Scene object
-  let scene = new BABYLON.Scene(engine);
+  let scene = new BABYLON.Scene(engine)
   // Create a FreeCamera, and set its position to {x: 0, y: 5, z: -10}
-  let camera = new BABYLON.FollowCamera('camera1', new BABYLON.Vector3(0, 5, -10), scene);
+  let camera = new BABYLON.FollowCamera('camera1', new BABYLON.Vector3(0, 5, -10), scene)
   // Target the camera to scene origin
-  camera.setTarget(BABYLON.Vector3.Zero());
+  camera.setTarget(BABYLON.Vector3.Zero())
+
+  let skybox = BABYLON.MeshBuilder.CreateBox('skyBox', { size: 10000 }, scene);
+  let skyboxMaterial = new BABYLON.StandardMaterial('skyBox', scene);
+  skyboxMaterial.backFaceCulling = false;
+  skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture('./imgs/skybox/bkg1', scene)
+  skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+  skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+  skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+  skybox.material = skyboxMaterial;
+
   // Attach the camera to the canvas
-  // camera.attachControl(canvas, false);
   // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
-  let light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), scene);
-  // Create a built-in "sphere" shape; its constructor takes 6 params: name, segment, diameter, scene, updatable, sideOrientation
-  // let sphere = BABYLON.CreateSphere('sphere1', 16, 2, scene, false, BABYLON.Mesh.FRONTSIDE);
+  let light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), scene)
+  // Create a built-in "sphere" shape its constructor takes 6 params: name, segment, diameter, scene, updatable, sideOrientation
   let sphere = BABYLON.CreateSphere('sphere1', {
     segments: 16,
     diameter: 2,
     updatable: false,
     sideOrientation: BABYLON.Mesh.FRONTSIDE,
-  }, scene);
+  }, scene)
   // Move the sphere upward 1/2 of its height
-  sphere.position.y = 1;
+  sphere.position.y = 1
+  sphere.isVisible = false
 
-  camera.lockedTarget = sphere;
+  camera.lockedTarget = sphere
 
-  // Create a built-in "ground" shape; its constructor takes 6 params : name, width, height, subdivision, scene, updatable
+  // Create a built-in "ground" shape its constructor takes 6 params : name, width, height, subdivision, scene, updatable
   let ground = BABYLON.CreateGround('ground1', {
-    height: 6,
-    width: 6,
+    height: 60,
+    width: 60,
     subdivisions: 2,
     updatable: false,
-  }, scene);
+  }, scene)
   // Return the created scene
-  return scene;
+  return scene
 }
 
 // call the createScene function
-let scene = createScene();
+let scene = createScene()
+if (DEBUG_MODE) {
+  scene.debugLayer.show({
+    showExplorer: true,
+    showInspector: true,
+    overlay: true,
+    inspectorURL: './js/inspector.js'
+  })
+}
 
-let sphere = scene.getMeshByName('sphere1');
+let sphere = scene.getMeshByName('sphere1')
+
+// let animation = BABYLON.Animation.Parse(animationJSON.animations[0])
+// sphere.animations = [animation]
+// scene.beginAnimation(sphere, 0, 100, true)
+
+let particleSystem = BABYLON.GPUParticleSystem.Parse(particleSystemJSON, scene, '.')
+particleSystem.start()
 
 // run the render loop
 engine.runRenderLoop(function(){
-  Timeline.update()
+  /* Timeline.update() */
 
   inputVector.set(0, 0, 0)
 
@@ -91,20 +119,20 @@ engine.runRenderLoop(function(){
     inputVector.z += 1
   }
 
-  let speed = 0.00004 * Timeline.delta
+  let speed = 0.00002 * engine.getDeltaTime() * 1000/*  Timeline.delta */
 
   inputVector.normalize()
 
   let velocityVector = inputVector.multiplyByFloats(speed, speed, speed)
 
   sphere.position = sphere.position.add(velocityVector)
-  scene.render();
-});
+  scene.render()
+})
 
 // the canvas/window resize event handler
 window.addEventListener('resize', () => {
-  engine.resize();
-});
+  engine.resize()
+})
 
 window.addEventListener('keydown', e => {
   if (e.code == 'KeyA') {
@@ -138,22 +166,24 @@ window.addEventListener('keyup', e => {
   }
 })
 
-canvas.addEventListener('pointerdown', e => {
-  canvas.setPointerCapture(e.pointerId)
-
-  canvas.classList.add('hide-cursor')
-
-  const onPointerMove = (e: PointerEvent) => {
-    sphere.rotate(new BABYLON.Vector3(0, 0, 1), e.movementX * Math.PI * 0.01)
-  }
-
-  const onPointerUp = (e: PointerEvent) => {
-    canvas.removeEventListener('pointerup', onPointerUp)
-    canvas.removeEventListener('pointermove', onPointerMove)
-    canvas.releasePointerCapture(e.pointerId)
-    canvas.classList.remove('hide-cursor')
-  }
-
-  canvas.addEventListener('pointermove', onPointerMove)
-  canvas.addEventListener('pointerup', onPointerUp)
-})
+if (!DEBUG_MODE) {
+  canvas.addEventListener('pointerdown', e => {
+    canvas.setPointerCapture(e.pointerId)
+  
+    canvas.classList.add('hide-cursor')
+  
+    const onPointerMove = (e: PointerEvent) => {
+      sphere.rotate(new BABYLON.Vector3(0, 0, 1), e.movementX * Math.PI * 0.01)
+    }
+  
+    const onPointerUp = (e: PointerEvent) => {
+      canvas.removeEventListener('pointerup', onPointerUp)
+      canvas.removeEventListener('pointermove', onPointerMove)
+      canvas.releasePointerCapture(e.pointerId)
+      canvas.classList.remove('hide-cursor')
+    }
+  
+    canvas.addEventListener('pointermove', onPointerMove)
+    canvas.addEventListener('pointerup', onPointerUp)
+  })
+}
